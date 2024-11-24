@@ -29,7 +29,7 @@ public class Main {
     static ArrayDeque<String> solution = new ArrayDeque<>();
 
     // Current state of all Circle values;
-    static String currentState;
+    static String currentState = "";
 
     // Whether the puzzle has been solved.
     static boolean solved = false;
