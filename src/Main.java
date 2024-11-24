@@ -73,9 +73,11 @@ public class Main {
         // Try to solve the puzzle! Best of luck, computer, you can do it! :D
         System.out.println("Attempting to solve puzzle with max solution moves of " + MAX_SOLUTION_MOVES
             + " and maximum total moves of " + MAX_TOTAL_MOVES + ".\n");
-        solve(circleList);
+        solved = solve(circleList);
         if (!solved) {
             System.out.println("No solution found...");
+            System.out.println("Total moves: " + totalMoves);
+            System.out.println("Explored solution size: " + exploredStates.size());
         } else {
             System.out.println("***Solution found!!!!*** Here's how it's done: \n");
             for (String s : solution) {

@@ -31,8 +31,8 @@ public class Circle {
      */
     public void rotateRight() {
         char temp = dots[dots.length - 1].getColor();
-        for (int i = dots.length - 1; i > 1; i--) {
-            dots[i] = dots[i - 1];
+        for (int i = dots.length - 1; i > 0; i--) {
+            dots[i].setColor(dots[i - 1].getColor());
         }
         dots[0].setColor(temp);
     }
@@ -43,7 +43,7 @@ public class Circle {
     public void rotateLeft() {
         char temp = dots[0].getColor();
         for (int i = 0; i < dots.length - 1; i++) {
-            dots[i] = dots[i + 1];
+            dots[i].setColor(dots[i + 1].getColor());
         }
         dots[dots.length - 1].setColor(temp);
     }
