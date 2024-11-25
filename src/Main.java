@@ -54,6 +54,11 @@ public class Main {
     static ArrayDeque<String> solution = new ArrayDeque<>();
 
     /**
+     * A counter to differentiate steps of the printed solution.
+     */
+    static int solutionStep = 1;
+
+    /**
      * Current state of all Circle values.
      */
     static String currentState = "";
@@ -72,7 +77,7 @@ public class Main {
      * A tolerance value for future scores. This will be subtracted from the highest score to
      *  allow for the possibility of a solution that needs to "get worse before it gets better."
      */
-    final static double TOLERANCE = 0.1;
+    final static double TOLERANCE = 0.3;
 
     /**
      * Whether the puzzle has been solved.
@@ -124,6 +129,7 @@ public class Main {
             System.out.println("Total moves: " + totalMoves);
             System.out.println("Explored solution size: " + exploredStates.size());
         } else {
+            System.out.println("*\n*\n");
             System.out.println("***Solution found!!!!*** Here's how it's done: \n");
             for (String s : solution) {
                 System.out.println(s);
@@ -171,7 +177,8 @@ public class Main {
             totalMoves++;
             solved = solve(circleList);
             if (solved) {
-                solution.push("Rotate " + c.getId() + " circle clockwise.");
+                solution.push("Step " + solutionStep + ": Rotate " + c.getId() + " circle clockwise.");
+                solutionStep++;
                 return true;
             } else {
                 c.rotateLeft();
