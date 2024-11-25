@@ -158,6 +158,8 @@ public class Main {
         // Exit this state early if its score is below the allowable tolerance.
         if (currentScore < (highestScore - TOLERANCE)) {
             return false;
+        } else if (currentScore > highestScore) {
+            highestScore = currentScore;
         }
 
         // Try to rotate each circle clockwise and see if it solves the puzzle.
