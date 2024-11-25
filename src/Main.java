@@ -2,36 +2,81 @@ import com.jake.Circle;
 import com.jake.Dot;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 public class Main {
 
-    // Number of moves made in the current solution attempt.
+    /**
+     * Number of moves made in the current solution attempt.
+     */
     static int solutionMoves = 0;
 
-    // Total number of moves made to track program runtime.
-    static int totalMoves = 0;
+    /**
+     * Total number of moves made to track program runtime.
+     */
+    static long totalMoves = 0;
 
-    // The upper bound on moves made in the current solution attempt.
-    static final int MAX_SOLUTION_MOVES = 100;
+    /**
+     * The upper bound on moves made in the current solution attempt.
+     */
+    static final int MAX_SOLUTION_MOVES = 80;
 
-    // The absolute upper bound on the times going through the loop.
-    static final int MAX_TOTAL_MOVES = 5000;
+    /**
+     * The absolute upper bound on the times going through the loop.
+     */
+    static final long MAX_TOTAL_MOVES = 10000000;
 
-    // Define the success state: the puzzle is solved when all Circle values match this pattern.
+    /**
+     * Define the success state: the puzzle is solved when all Circle values match this pattern.
+     */
     static final String successState = "GGGRYGGG YGRYYGGY GYYGGYYR GGGGGYRG";
 
-    // The total list of states that have already been attained. This will be used as memoization,
-    //  keeping track of arrangements we've already tried and essentially making sure we try unique
-    //  moves instead of rotating everything about.
-    static ArrayDeque<String> exploredStates = new ArrayDeque<>();
+    /**
+     * The success state represented as a character array.
+     */
+    static final char[] successArray = successState.toCharArray();
 
-    // The list of moves that leads from the start state to the end state.
+    /**
+     * The total list of states that have already been attained. This will be used as memoization,
+     *   keeping track of arrangements we've already tried and essentially making sure we try unique
+     *   moves instead of rotating everything about.
+     */
+    static ArrayList<String> exploredStates = new ArrayList<>();
+
+    /**
+     * A parallel array of scores corresponding to each explored state.
+     */
+    static ArrayList<Double> exploredStateScores = new ArrayList<>();
+
+    /**
+     * The list of moves that leads from the start state to the end state.
+     */
     static ArrayDeque<String> solution = new ArrayDeque<>();
 
-    // Current state of all Circle values;
+    /**
+     * Current state of all Circle values.
+     */
     static String currentState = "";
 
-    // Whether the puzzle has been solved.
+    /**
+     * The score value of the current state.
+     */
+    static double currentScore = 0.0;
+
+    /**
+     * The highest score value attained so far, used to track progress towards the goal.
+     */
+    static double highestScore = 0.0;
+
+    /**
+     * A tolerance value for future scores. This will be subtracted from the highest score to
+     *  allow for the possibility of a solution that needs to "get worse before it gets better."
+     */
+    final static double TOLERANCE = 0.1;
+
+    /**
+     * Whether the puzzle has been solved.
+     */
     static boolean solved = false;
 
     public static void main(String[] args) {
@@ -96,18 +141,30 @@ public class Main {
             return true;
         } else if (solutionMoves > MAX_SOLUTION_MOVES || totalMoves > MAX_TOTAL_MOVES) {
             return false;
+        } else if (exploredStates.contains(currentState)) {
+            return false;
         } else {
-            currentState = currentState(circleList);
-            if (exploredStates.contains(currentState)) {
-                return false;
-            } else {
-                exploredStates.add(currentState);
-            }
+            exploredStates.add(currentState);
+            exploredStateScores.add(currentScore);
+        }
+
+        // Print out diagnostic data at regular intervals.
+        if (totalMoves % 1000 == 0) {
+            System.out.println("totalMoves: " + totalMoves + ", Current state: " + currentState
+                    + ", Current state score: " + computeScore(currentState) + ", Explored state size: "
+                    + exploredStates.size());
+        }
+
+        // Exit this state early if its score is below the allowable tolerance.
+        if (currentScore < (highestScore - TOLERANCE)) {
+            return false;
         }
 
         // Try to rotate each circle clockwise and see if it solves the puzzle.
         for (Circle c : circleList) {
             c.rotateRight();
+            currentState = currentState(circleList);
+            currentScore = computeScore(currentState);
             solutionMoves++;
             totalMoves++;
             solved = solve(circleList);
@@ -116,6 +173,8 @@ public class Main {
                 return true;
             } else {
                 c.rotateLeft();
+                currentState = currentState(circleList);
+                currentScore = computeScore(currentState);
                 solutionMoves--;
             }
         }
@@ -123,6 +182,8 @@ public class Main {
         // Try to rotate each circle counter-clockwise and see if it solves the puzzle.
         for (Circle c: circleList) {
             c.rotateLeft();
+            currentState = currentState(circleList);
+            currentScore = computeScore(currentState);
             solutionMoves++;
             totalMoves++;
             solved = solve(circleList);
@@ -131,6 +192,8 @@ public class Main {
                 return true;
             } else {
                 c.rotateRight();
+                currentState = currentState(circleList);
+                currentScore = computeScore(currentState);
                 solutionMoves--;
             }
         }
@@ -151,5 +214,23 @@ public class Main {
             result.append(" ").append(circle.toString());
         }
         return result.toString().trim();
+    }
+
+    /**
+     * Compute the "score" of the current state as a measure of how close it is to the solution.
+     * @param stateString The current state represented as a String of Dot colors.
+     * @return The score of the current state. 0 is a complete mismatch, 1 is the solution state.
+     */
+    private static double computeScore(String stateString) {
+        double matches = 0, mismatches = 0;
+        char[] stateArray = stateString.toCharArray();
+        for (int i = 0; i < stateArray.length; i++) {
+            if (stateArray[i] == successArray[i]) {
+                matches++;
+            } else {
+                mismatches++;
+            }
+        }
+        return matches / (matches + mismatches);
     }
 }
